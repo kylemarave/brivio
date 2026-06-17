@@ -1,1 +1,333 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: brivio --default, brivio-dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "brivio";
+  default: true;
+  color-scheme: light;
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(97.5% 0.004 264);
+  --color-base-300: oklch(92% 0.006 264);
+  --color-base-content: oklch(22% 0.02 264);
+  --color-primary: oklch(52% 0.19 264);
+  --color-primary-content: oklch(98% 0.005 264);
+  --color-secondary: oklch(55% 0.04 264);
+  --color-secondary-content: oklch(98% 0.005 264);
+  --color-accent: oklch(58% 0.16 230);
+  --color-accent-content: oklch(98% 0.005 230);
+  --color-neutral: oklch(28% 0.02 264);
+  --color-neutral-content: oklch(96% 0.005 264);
+  --color-info: oklch(58% 0.14 230);
+  --color-info-content: oklch(98% 0.005 230);
+  --color-success: oklch(58% 0.14 155);
+  --color-success-content: oklch(98% 0.005 155);
+  --color-warning: oklch(72% 0.15 75);
+  --color-warning-content: oklch(25% 0.04 75);
+  --color-error: oklch(58% 0.2 25);
+  --color-error-content: oklch(98% 0.005 25);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "brivio-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: oklch(22% 0.015 264);
+  --color-base-200: oklch(18% 0.015 264);
+  --color-base-300: oklch(28% 0.015 264);
+  --color-base-content: oklch(92% 0.01 264);
+  --color-primary: oklch(62% 0.18 264);
+  --color-primary-content: oklch(15% 0.02 264);
+}
+
+/* ─── Base ─── */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: oklch(97.5% 0.004 264);
+  color: oklch(22% 0.02 264);
+}
+
+/* ─── App shell (admin / tenant) ─── */
+.app-shell {
+  @apply flex min-h-screen;
+}
+
+.app-sidebar {
+  @apply hidden lg:flex flex-col w-64 shrink-0;
+  background: linear-gradient(180deg, oklch(18% 0.025 264) 0%, oklch(22% 0.03 264) 100%);
+  color: oklch(92% 0.01 264);
+}
+
+.app-sidebar--tenant {
+  background: linear-gradient(180deg, oklch(20% 0.03 250) 0%, oklch(24% 0.035 255) 100%);
+}
+
+.app-sidebar-brand {
+  @apply flex items-center gap-3 px-5 py-5 border-b;
+  border-color: oklch(100% 0 0 / 0.08);
+}
+
+.app-sidebar-logo {
+  @apply flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold;
+  background: oklch(52% 0.19 264);
+  color: white;
+}
+
+.app-sidebar-nav {
+  @apply flex-1 overflow-y-auto px-3 py-4 space-y-1;
+}
+
+.app-sidebar-section {
+  @apply px-3 pt-4 pb-1 text-[0.65rem] font-semibold uppercase tracking-widest;
+  color: oklch(70% 0.02 264);
+}
+
+.app-sidebar-link {
+  @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors;
+  color: oklch(78% 0.015 264);
+}
+
+.app-sidebar-link:hover {
+  background: oklch(100% 0 0 / 0.06);
+  color: white;
+}
+
+.app-sidebar-link.active {
+  background: oklch(52% 0.19 264 / 0.25);
+  color: white;
+}
+
+.app-sidebar-badge {
+  @apply mx-3 mt-4 rounded-lg px-3 py-2.5 text-xs;
+  background: oklch(100% 0 0 / 0.06);
+  border: 1px solid oklch(100% 0 0 / 0.1);
+}
+
+.app-main {
+  @apply flex flex-1 flex-col min-w-0;
+}
+
+.app-topbar {
+  @apply sticky top-0 z-30 flex items-center justify-between gap-4 px-4 lg:px-6 h-14;
+  background: oklch(100% 0 0 / 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid oklch(92% 0.006 264);
+}
+
+.app-content {
+  @apply flex-1 p-4 lg:p-6;
+  background: oklch(97.5% 0.004 264);
+}
+
+/* Mobile drawer overrides */
+.drawer-side .app-sidebar {
+  @apply flex w-72;
+}
+
+/* ─── Page structure ─── */
+.page-header {
+  @apply mb-6;
+}
+
+.page-header h1 {
+  @apply text-2xl font-semibold tracking-tight text-base-content;
+}
+
+.page-header p {
+  @apply mt-1 text-sm text-base-content/60;
+}
+
+.page-header-row {
+  @apply flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6;
+}
+
+/* ─── KPI cards ─── */
+.kpi-grid {
+  @apply grid gap-4 sm:grid-cols-2 xl:grid-cols-3;
+}
+
+.kpi-card {
+  @apply rounded-xl border bg-base-100 p-5;
+  border-color: oklch(92% 0.006 264);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.04);
+}
+
+.kpi-card-label {
+  @apply text-xs font-medium uppercase tracking-wide text-base-content/50;
+}
+
+.kpi-card-value {
+  @apply mt-1 text-3xl font-semibold tracking-tight;
+}
+
+.kpi-card-desc {
+  @apply mt-1 text-xs text-base-content/50;
+}
+
+/* ─── Panels & tables ─── */
+.panel {
+  @apply rounded-xl border bg-base-100;
+  border-color: oklch(92% 0.006 264);
+  box-shadow: 0 1px 2px oklch(0% 0 0 / 0.04);
+}
+
+.panel-header {
+  @apply flex items-center justify-between border-b px-5 py-4;
+  border-color: oklch(92% 0.006 264);
+}
+
+.panel-header h2 {
+  @apply text-sm font-semibold;
+}
+
+.panel-body {
+  @apply p-5;
+}
+
+.table thead th {
+  @apply text-[0.7rem] font-semibold uppercase tracking-wider text-base-content/50 bg-base-200/50;
+}
+
+.table tbody tr:hover {
+  @apply bg-base-200/40;
+}
+
+.chart-placeholder {
+  @apply flex h-44 items-center justify-center rounded-lg border border-dashed text-sm text-base-content/40;
+  border-color: oklch(92% 0.006 264);
+  background: oklch(97.5% 0.004 264);
+}
+
+/* ─── Auth (always light form panel) ─── */
+.auth-layout {
+  @apply grid min-h-screen lg:grid-cols-2;
+}
+
+.auth-brand {
+  @apply relative flex flex-col justify-between p-8 sm:p-12 lg:p-14;
+  background: linear-gradient(145deg, oklch(18% 0.03 264) 0%, oklch(28% 0.06 264) 55%, oklch(38% 0.1 264) 100%);
+  color: white;
+}
+
+.auth-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, oklch(52% 0.19 264 / 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, oklch(58% 0.16 230 / 0.2) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.auth-brand > * {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-brand-logo {
+  @apply flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold;
+  background: oklch(52% 0.19 264);
+}
+
+.auth-brand h1 {
+  @apply mt-8 text-3xl sm:text-4xl font-semibold leading-tight tracking-tight;
+}
+
+.auth-brand-desc {
+  @apply mt-4 max-w-md text-sm leading-relaxed;
+  color: oklch(85% 0.02 264);
+}
+
+.auth-brand-features {
+  @apply mt-8 space-y-3 text-sm;
+  color: oklch(80% 0.02 264);
+}
+
+.auth-brand-features li {
+  @apply flex items-center gap-3;
+}
+
+.auth-brand-features li::before {
+  content: "";
+  @apply h-1.5 w-1.5 rounded-full shrink-0;
+  background: oklch(62% 0.18 264);
+}
+
+.auth-brand-footer {
+  @apply text-xs;
+  color: oklch(65% 0.02 264);
+}
+
+.auth-form-panel {
+  @apply flex items-center justify-center p-6 sm:p-10 lg:p-14;
+  background: white;
+}
+
+.auth-form-panel[data-theme="brivio"] {
+  background: white;
+}
+
+.auth-form-inner {
+  @apply w-full max-w-md space-y-6;
+}
+
+.auth-form-inner h2 {
+  @apply text-2xl font-semibold tracking-tight text-gray-900;
+}
+
+.auth-form-inner .auth-subtitle {
+  @apply text-sm text-gray-500;
+}
+
+.auth-form-inner .input,
+.auth-form-inner .select {
+  @apply bg-white border-gray-200 text-gray-900;
+}
+
+.auth-form-inner .input:focus,
+.auth-form-inner .select:focus {
+  @apply border-primary outline-none ring-2 ring-primary/20;
+}
+
+.auth-demo-box {
+  @apply rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm;
+}
+
+.auth-demo-box p:first-child {
+  @apply font-medium text-gray-700;
+}
+
+.auth-demo-box code {
+  @apply text-xs text-gray-600;
+}
+
+.auth-links {
+  @apply flex justify-between text-sm;
+}
+
+/* ─── Form fields in app ─── */
+.field-label {
+  @apply mb-1.5 block text-xs font-medium text-base-content/70;
+}
+
+.input,
+.select,
+.textarea {
+  @apply border-base-300;
+}
+
+.btn-primary {
+  @apply font-medium shadow-sm;
+}
