@@ -12,36 +12,34 @@ import { AuthError, AuthService } from '../../../core/auth/auth.service';
       <aside class="auth-brand">
         <div>
           <div class="auth-brand-logo">B</div>
-          <p class="mt-6 text-xs font-semibold uppercase tracking-widest text-white/60">Multi-tenant Platform</p>
-          <h1>One platform, many stores</h1>
+          <p class="auth-brand-tag">Multi-tenant Platform</p>
+          <h1>Run every store from one place</h1>
           <p class="auth-brand-desc">
-            Tenants apply to join, super admins review applications, and approved stores get their own workspace.
+            Brivio connects coffee shops and retail tenants under one platform. Super admins review applications; approved owners get a full workspace.
           </p>
           <ul class="auth-brand-features">
-            <li>Apply as a new tenant business</li>
-            <li>Super admin reviews all applications</li>
-            <li>Approved tenants manage their own store</li>
+            <li>Tenant onboarding & approval workflow</li>
+            <li>Isolated store catalog, orders & ops</li>
+            <li>Real-time workspace for each business</li>
           </ul>
         </div>
-        <p class="auth-brand-footer">© 2026 BRIVIO</p>
+        <p class="auth-brand-footer">© 2026 BRIVIO · Built for growing retail brands</p>
       </aside>
 
-      <section class="auth-form-panel" data-theme="brivio">
-        <div class="auth-form-inner">
+      <section class="auth-form-panel">
+        <div class="auth-form-card">
           <div>
-            <h2>Sign in</h2>
-            <p class="auth-subtitle mt-1">Super admin or approved tenant owner.</p>
+            <h2>Welcome back</h2>
+            <p class="auth-subtitle">Sign in as super admin or tenant owner.</p>
           </div>
 
           @if (errorMessage()) {
-            <div class="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-              {{ errorMessage() }}
-            </div>
+            <div class="auth-alert auth-alert-error">{{ errorMessage() }}</div>
           }
 
           <form class="space-y-4" (ngSubmit)="onSubmit()">
-            <div>
-              <label class="field-label text-gray-600" for="email">Email address</label>
+            <div class="auth-field">
+              <label for="email">Email address</label>
               <input
                 id="email"
                 class="input input-bordered w-full"
@@ -52,34 +50,37 @@ import { AuthError, AuthService } from '../../../core/auth/auth.service';
                 required
               />
             </div>
-            <div>
-              <label class="field-label text-gray-600" for="password">Password</label>
+            <div class="auth-field">
+              <div class="flex items-center justify-between">
+                <label for="password">Password</label>
+                <a routerLink="/forgot-password" class="text-xs font-medium text-primary hover:underline">Forgot?</a>
+              </div>
               <input
                 id="password"
                 class="input input-bordered w-full"
                 [(ngModel)]="password"
                 name="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 required
               />
             </div>
-            <button class="btn btn-primary w-full" [disabled]="loading()">
+            <button class="btn-auth" [disabled]="loading()">
               {{ loading() ? 'Signing in…' : 'Sign in' }}
             </button>
           </form>
 
           <div class="auth-demo-box">
-            <p>Demo accounts</p>
-            <p class="mt-2 leading-relaxed">
-              <code class="block">admin@brivio.com</code> — Super Admin
-              <code class="block mt-1">hello@sugarblitz.com</code> — Tenant (Sugarblitz)
-            </p>
+            <p class="auth-demo-box-title">Demo accounts</p>
+            <div class="auth-demo-pill">
+              <span><code>admin@brivio.com</code> Super Admin</span>
+              <span><code>hello@sugarblitz.com</code> Sugarblitz Owner</span>
+            </div>
           </div>
 
-          <p class="text-sm text-gray-500">
+          <p class="auth-footer-text">
             New business?
-            <a routerLink="/register" class="link link-primary no-underline hover:underline">Apply as tenant</a>
+            <a routerLink="/register" class="font-semibold text-primary hover:underline">Apply as tenant</a>
           </p>
         </div>
       </section>
@@ -94,15 +95,16 @@ export class LoginComponent {
 
   constructor(private readonly authService: AuthService) {}
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     this.loading.set(true);
     this.errorMessage.set('');
     try {
-      const user = this.authService.login(this.email, this.password);
-      void this.authService.redirectByRole(user.role).finally(() => this.loading.set(false));
+      const user = await this.authService.login(this.email, this.password);
+      await this.authService.redirectByRole(user.role);
     } catch (error) {
-      this.loading.set(false);
       this.errorMessage.set(error instanceof AuthError ? error.message : 'Unable to sign in.');
+    } finally {
+      this.loading.set(false);
     }
   }
 }

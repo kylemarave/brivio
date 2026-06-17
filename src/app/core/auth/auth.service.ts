@@ -1,8 +1,12 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ROLES, Role } from '../constants/roles';
-import { MockDataService } from '../services/mock-data.service';
+import { firstValueFrom } from 'rxjs';
+import { ApiError } from '../api/api-response.model';
+import { Role, ROLES } from '../constants/roles';
 import { User } from '../models';
+import { RegisterTenantDto } from '../models/dtos';
+import { AuthRepository } from './auth.repository';
+import { MockAuthRepository } from './mock-auth.repository';
 
 export class AuthError extends Error {
   constructor(message: string) {
@@ -13,26 +17,53 @@ export class AuthError extends Error {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly router = inject(Router);
+  private readonly authRepository = inject(AuthRepository);
   private readonly userSignal = signal<User | null>(null);
+  private readonly tokenSignal = signal<string | null>(null);
 
   readonly currentUser = this.userSignal.asReadonly();
+  readonly accessToken = this.tokenSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.userSignal() !== null);
 
-  constructor(
-    private readonly router: Router,
-    private readonly mockDataService: MockDataService,
-  ) {}
+  constructor() {
+    this.restoreSession();
+  }
 
-  login(email: string, _password: string): User {
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = this.resolveUser(normalizedEmail);
-    this.userSignal.set(user);
-    return user;
+  async login(email: string, password: string): Promise<User> {
+    try {
+      const response = await firstValueFrom(this.authRepository.login({ email, password }));
+      this.userSignal.set(response.data.user);
+      this.tokenSignal.set(response.data.accessToken);
+      return response.data.user;
+    } catch (error) {
+      throw this.toAuthError(error);
+    }
+  }
+
+  async register(dto: RegisterTenantDto): Promise<void> {
+    try {
+      await firstValueFrom(this.authRepository.register(dto));
+    } catch (error) {
+      throw this.toAuthError(error);
+    }
+  }
+
+  async forgotPassword(email: string): Promise<string> {
+    try {
+      const response = await firstValueFrom(this.authRepository.forgotPassword({ email }));
+      return response.data.message;
+    } catch (error) {
+      throw this.toAuthError(error);
+    }
   }
 
   logout(): void {
-    this.userSignal.set(null);
-    void this.router.navigate(['/login']);
+    void firstValueFrom(this.authRepository.logout()).finally(() => {
+      this.userSignal.set(null);
+      this.tokenSignal.set(null);
+      void this.router.navigate(['/login']);
+    });
   }
 
   redirectByRole(role: Role): Promise<boolean> {
@@ -47,39 +78,23 @@ export class AuthService {
     return !!currentRole && roles.includes(currentRole);
   }
 
-  private resolveUser(email: string): User {
-    if (email.includes('admin')) {
-      return this.buildUser('1', 'Super Admin', email, ROLES.SUPER_ADMIN);
+  private restoreSession(): void {
+    const mockRepo = this.authRepository as MockAuthRepository;
+    if (typeof mockRepo.readSession !== 'function') return;
+    const session = mockRepo.readSession();
+    if (session) {
+      this.userSignal.set(session.user);
+      this.tokenSignal.set(session.accessToken);
     }
-
-    const tenant = this.mockDataService.getTenantByEmail(email);
-    if (!tenant) {
-      throw new AuthError('No account found for this email. Apply as a tenant first.');
-    }
-    if (tenant.status === 'PENDING') {
-      throw new AuthError('Your application is still pending approval.');
-    }
-    if (tenant.status !== 'ACTIVE') {
-      throw new AuthError('This tenant account is not active. Contact support.');
-    }
-
-    return this.buildUser(`owner-${tenant.id}`, `${tenant.name} Owner`, email, ROLES.TENANT_OWNER, tenant.id);
   }
 
-  private buildUser(
-    id: string,
-    name: string,
-    email: string,
-    role: Role,
-    tenantId?: string,
-  ): User {
-    return {
-      id,
-      name,
-      email,
-      role,
-      tenantId,
-      status: 'ACTIVE',
-    };
+  private toAuthError(error: unknown): AuthError {
+    if (error instanceof ApiError) {
+      return new AuthError(error.message);
+    }
+    if (error instanceof AuthError) {
+      return error;
+    }
+    return new AuthError('Unable to complete authentication.');
   }
 }

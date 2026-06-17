@@ -164,3 +164,140 @@ export interface Settings {
   taxRate: number;
   enableDarkMode: boolean;
 }
+
+export interface StoreProfile {
+  tenantId: string;
+  businessName: string;
+  logo: string;
+  banner: string;
+  description: string;
+  phone: string;
+  email: string;
+  address: string;
+  businessHours: string;
+  socialLinks: string;
+  primaryColor: string;
+  secondaryColor: string;
+  theme: string;
+  receiptFooter: string;
+}
+
+export interface TenantSettings {
+  tenantId: string;
+  storeName: string;
+  timezone: string;
+  twoFactor: boolean;
+  requirePinRefund: boolean;
+  emailAlerts: boolean;
+  lowStockAlerts: boolean;
+  paymentGateway: string;
+  emailProvider: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  name: string;
+  points: number;
+}
+
+export interface LoyaltyRedemption {
+  id: string;
+  customerId: string;
+  customerName: string;
+  reward: string;
+  points: number;
+  date: string;
+}
+
+export interface LoyaltyProgram {
+  tenantId: string;
+  pointsPerPurchase: number;
+  minimumSpend: number;
+  expiryDays: number;
+  rewards: LoyaltyReward[];
+  redemptions: LoyaltyRedemption[];
+}
+
+export interface AttendanceRecord {
+  id: string;
+  tenantId: string;
+  employeeId: string;
+  employeeName: string;
+  clockIn: string;
+  clockOut: string | null;
+  hoursWorked: number;
+  date: string;
+}
+
+export interface Shift {
+  id: string;
+  tenantId: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface LeaveRequest {
+  id: string;
+  tenantId: string;
+  employeeId: string;
+  employeeName: string;
+  date: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+}
+
+export interface AdminDashboardStats {
+  totalTenants: number;
+  activeTenants: number;
+  pendingApplications: number;
+  inactiveTenants: number;
+}
+
+export interface AdminTenantWorkspaceStats {
+  productCount: number;
+  orderCount: number;
+  customerCount: number;
+  employeeCount: number;
+  supplierCount: number;
+  pendingOrders: number;
+  lowStockAlerts: number;
+  monthlyRevenue: number;
+  todaysOrders: number;
+}
+
+export interface AdminTenantOverview {
+  tenant: Tenant;
+  storeProfile: StoreProfile;
+  settings: TenantSettings;
+  workspace: AdminTenantWorkspaceStats;
+  recentOrders: Order[];
+}
+
+export interface TenantDashboardStats {
+  todaysSales: number;
+  todaysOrders: number;
+  monthlyRevenue: number;
+  activeCustomers: number;
+  lowStockAlerts: number;
+  pendingOrders: number;
+}
+
+export interface ReportSummary {
+  totalOrders: number;
+  totalRevenue: number;
+  lowStockCount: number;
+  customerCount: number;
+  employeeCount: number;
+  topProducts: { name: string; quantity: number }[];
+  recentSales: { label: string; amount: number }[];
+}
+
+export interface AuthSession {
+  user: User;
+  accessToken: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}

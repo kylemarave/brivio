@@ -1,7 +1,12 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
-import { MockDataService } from '../../core/services/mock-data.service';
+import { AdminTenantService } from '../../features/admin/services/admin-tenant.service';
+
+interface NavGroup {
+  section: string;
+  items: { label: string; path: string; icon: string }[];
+}
 
 @Component({
   selector: 'app-tenant-layout',
@@ -53,15 +58,17 @@ import { MockDataService } from '../../core/services/mock-data.service';
             </div>
           </div>
 
-          <div class="app-sidebar-nav">
-            <p class="app-sidebar-section">Store</p>
-            @for (item of navItems; track item.path) {
-              <a [routerLink]="item.path" routerLinkActive="active" class="app-sidebar-link">
-                <span class="text-base opacity-70">{{ item.icon }}</span>
-                {{ item.label }}
-              </a>
-            }
-          </div>
+          @for (group of navGroups; track group.section) {
+            <div class="app-sidebar-nav">
+              <p class="app-sidebar-section">{{ group.section }}</p>
+              @for (item of group.items; track item.path) {
+                <a [routerLink]="item.path" routerLinkActive="active" class="app-sidebar-link">
+                  <span class="text-base opacity-70">{{ item.icon }}</span>
+                  {{ item.label }}
+                </a>
+              }
+            </div>
+          }
         </nav>
       </aside>
     </div>
@@ -70,20 +77,74 @@ import { MockDataService } from '../../core/services/mock-data.service';
     '[attr.data-theme]': '"brivio"',
   },
 })
-export class TenantLayoutComponent {
-  readonly navItems = [
-    { label: 'Dashboard', path: '/tenant/dashboard', icon: '◫' },
-    { label: 'Products', path: '/tenant/products', icon: '☕' },
-    { label: 'Orders', path: '/tenant/orders', icon: '◧' },
-    { label: 'Store Profile', path: '/tenant/store', icon: '◉' },
+export class TenantLayoutComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly adminTenantService = inject(AdminTenantService);
+
+  readonly tenantName = signal('My Store');
+
+  readonly navGroups: NavGroup[] = [
+    {
+      section: 'Overview',
+      items: [{ label: 'Dashboard', path: '/tenant/dashboard', icon: '◫' }],
+    },
+    {
+      section: 'Catalog',
+      items: [
+        { label: 'Products', path: '/tenant/products', icon: '☕' },
+        { label: 'Categories', path: '/tenant/categories', icon: '▦' },
+        { label: 'Variants', path: '/tenant/variants', icon: '◈' },
+        { label: 'Add-ons', path: '/tenant/addons', icon: '＋' },
+      ],
+    },
+    {
+      section: 'Sales',
+      items: [
+        { label: 'Orders', path: '/tenant/orders', icon: '◧' },
+        { label: 'Customers', path: '/tenant/customers', icon: '◉' },
+        { label: 'Loyalty', path: '/tenant/loyalty', icon: '★' },
+      ],
+    },
+    {
+      section: 'Operations',
+      items: [
+        { label: 'Inventory', path: '/tenant/inventory', icon: '▤' },
+        { label: 'Suppliers', path: '/tenant/suppliers', icon: '⛟' },
+      ],
+    },
+    {
+      section: 'People',
+      items: [
+        { label: 'Employees', path: '/tenant/employees', icon: '👤' },
+        { label: 'Attendance', path: '/tenant/attendance', icon: '⏱' },
+        { label: 'Schedule', path: '/tenant/schedule', icon: '📅' },
+      ],
+    },
+    {
+      section: 'Finance',
+      items: [
+        { label: 'Payments', path: '/tenant/payments', icon: '💳' },
+        { label: 'Reports', path: '/tenant/reports', icon: '📊' },
+      ],
+    },
+    {
+      section: 'Marketing',
+      items: [
+        { label: 'Promotions', path: '/tenant/promotions', icon: '🏷' },
+        { label: 'Coupons', path: '/tenant/coupons', icon: '🎟' },
+      ],
+    },
+    {
+      section: 'Settings',
+      items: [
+        { label: 'Store Profile', path: '/tenant/store', icon: '🏪' },
+        { label: 'Settings', path: '/tenant/settings', icon: '⚙' },
+      ],
+    },
   ];
 
   readonly userName = computed(() => this.authService.currentUser()?.name ?? 'Owner');
   readonly tenantId = computed(() => this.authService.currentUser()?.tenantId ?? '');
-  readonly tenantName = computed(() => {
-    const id = this.tenantId();
-    return id ? (this.mockDataService.getTenantById(id)?.name ?? 'My Store') : 'My Store';
-  });
   readonly tenantInitial = computed(() => this.tenantName().charAt(0).toUpperCase());
   readonly userInitials = computed(() => {
     const name = this.userName();
@@ -95,10 +156,14 @@ export class TenantLayoutComponent {
       .toUpperCase();
   });
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly mockDataService: MockDataService,
-  ) {}
+  ngOnInit(): void {
+    const id = this.tenantId();
+    if (!id) return;
+    this.adminTenantService.getTenant(id).subscribe({
+      next: (t) => this.tenantName.set(t.name),
+      error: () => this.tenantName.set('My Store'),
+    });
+  }
 
   logout(): void {
     this.authService.logout();
